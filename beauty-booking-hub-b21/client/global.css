@@ -1,0 +1,140 @@
+/** @import must precede all other statements */
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 30 50% 98%;
+    --foreground: 20 20% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 20 20% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 20% 15%;
+
+    --primary: 340 40% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 35 30% 92%;
+    --secondary-foreground: 20 20% 15%;
+
+    --muted: 35 20% 95%;
+    --muted-foreground: 20 10% 45%;
+
+    --accent: 340 30% 95%;
+    --accent-foreground: 340 40% 55%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 35 20% 88%;
+    --input: 35 20% 88%;
+    --ring: 340 40% 55%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 20 20% 10%;
+    --foreground: 30 50% 98%;
+
+    --card: 20 20% 12%;
+    --card-foreground: 30 50% 98%;
+
+    --popover: 20 20% 12%;
+    --popover-foreground: 30 50% 98%;
+
+    --primary: 340 50% 65%;
+    --primary-foreground: 20 20% 10%;
+
+    --secondary: 20 15% 18%;
+    --secondary-foreground: 30 50% 98%;
+
+    --muted: 20 15% 15%;
+    --muted-foreground: 30 10% 70%;
+
+    --accent: 340 30% 20%;
+    --accent-foreground: 340 50% 65%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 20 15% 20%;
+    --input: 20 15% 20%;
+    --ring: 340 50% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif tracking-tight;
+  }
+}
+
+@layer utilities {
+  .font-serif {
+    font-family: "Playfair Display", serif;
+  }
+  .font-sans {
+    font-family: "Inter", sans-serif;
+  }
+  .bg-beauty-gradient {
+    @apply bg-gradient-to-br from-[#FFF9F5] via-[#FFF1F1] to-[#FFF9F5];
+  }
+}
+
+
+/* Фикс для сетки календаря */
+.rdp-months {
+  width: 100% !important;
+}
+
+.rdp-month {
+  width: 100% !important;
+}
+
+.rdp-table {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* Принудительно выстраиваем шапку (ПН-ВС) и строки с числами в Flexbox */
+.rdp-head_row, 
+.rdp-row {
+  display: flex !important;
+  width: 100% !important;
+  justify-content: space-between !important;
+}
+
+/* Центрируем содержимое ячеек */
+.rdp-cell, 
+.rdp-head_cell {
+  flex: 1 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  max-width: 45px !important; /* Чтобы числа не разъезжались слишком сильно */
+}
+
+/* Убираем лишние отступы, которые могут ломать сетку */
+.rdp-tbody {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important; /* Расстояние между неделями */
+}
