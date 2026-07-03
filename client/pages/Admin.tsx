@@ -9,13 +9,13 @@ import {
   Calendar as CalendarIcon,
   Settings,
   LogOut,
-  Bell,
-  Search,
   Plus,
   Trash2,
   Upload
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { format } from "date-fns";
+import { ru } from "date-fns/locale";
 
 export default function Admin() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -71,6 +71,12 @@ export default function Admin() {
   const deleteMaster = (id: number) => {
     if (window.confirm("Удалить мастера?")) {
       setMasters(masters.filter(m => m.id !== id));
+    }
+  };
+
+  const deleteBooking = (id: number) => {
+    if (window.confirm("Удалить это бронирование?")) {
+      setBookings(bookings.filter(b => b.id !== id));
     }
   };
 
@@ -217,16 +223,13 @@ export default function Admin() {
               {activeTab === "settings" && (
                 <div className="max-w-md space-y-8">
                   <h4 className="text-2xl font-bold">Настройки сайта</h4>
-
                   <div>
                     <label className="block text-sm font-bold mb-2">Название салона</label>
                     <Input value={siteName} onChange={(e) => setSiteName(e.target.value)} className="rounded-xl h-12" />
                   </div>
-
                   <div>
                     <label className="block text-sm font-bold mb-3">Логотип</label>
                     {logo && <img src={logo} alt="logo" className="h-28 mb-4 border rounded-2xl p-3 bg-white" />}
-                    
                     <div className="flex gap-3">
                       <label className="cursor-pointer bg-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-primary/90">
                         <Upload size={20} />
@@ -279,8 +282,34 @@ export default function Admin() {
 
               {activeTab === "bookings" && (
                 <div>
-                  <h4 className="text-2xl font-bold mb-6">Бронирования</h4>
-                  <p className="text-muted-foreground">Всего: {bookings.length}</p>
+                  <h4 className="text-2xl font-bold mb-6">Бронирования ({bookings.length})</h4>
+                  {bookings.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-12">Пока нет бронирований</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {bookings.map((booking: any) => (
+                        <div key={booking.id} className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-muted/50 rounded-2xl gap-4">
+                          <div>
+                            <p className="font-bold text-lg">{booking.name}</p>
+                            <p className="text-sm">{booking.service} • {booking.master}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {format(new Date(booking.date), "d MMMM yyyy", { locale: ru })} в {booking.time}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {booking.phone} | {booking.email}
+                            </p>
+                          </div>
+                          <Button 
+                            variant="destructive" 
+                            size="icon" 
+                            onClick={() => deleteBooking(booking.id)}
+                          >
+                            <Trash2 size={18} />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
