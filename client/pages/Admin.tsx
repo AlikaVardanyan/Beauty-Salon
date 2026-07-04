@@ -44,7 +44,7 @@ export default function Admin() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentItem, setCurrentItem] = useState<any>(null);
 
-  // Автосохранение
+
   useEffect(() => { localStorage.setItem("services", JSON.stringify(services)); }, [services]);
   useEffect(() => { localStorage.setItem("masters", JSON.stringify(masters)); }, [masters]);
   useEffect(() => { localStorage.setItem("bookings", JSON.stringify(bookings)); }, [bookings]);
@@ -100,37 +100,42 @@ export default function Admin() {
 
     if (modalType === "service") {
       if (isEditMode) {
-        setServices(services.map(s => s.id === currentItem.id ? currentItem : s));
+        setServices(prev => prev.map(s => s.id === currentItem.id ? currentItem : s));
       } else {
-        setServices([...services, currentItem]);
+        setServices(prev => [...prev, currentItem]);
       }
     } else if (modalType === "master") {
       if (isEditMode) {
-        setMasters(masters.map(m => m.id === currentItem.id ? currentItem : m));
+        setMasters(prev => prev.map(m => m.id === currentItem.id ? currentItem : m));
       } else {
-        setMasters([...masters, currentItem]);
+        setMasters(prev => [...prev, currentItem]);
       }
     } else if (modalType === "booking") {
       if (isEditMode) {
-        setBookings(bookings.map(b => b.id === currentItem.id ? currentItem : b));
+        setBookings(prev => prev.map(b => b.id === currentItem.id ? currentItem : b));
       } else {
-        setBookings([...bookings, currentItem]);
+        setBookings(prev => [...prev, currentItem]);
       }
     }
 
-    setIsModalOpen(false);
+  
+    setTimeout(() => {
+      setIsModalOpen(false);
+      setCurrentItem(null);
+      setModalType(null);
+    }, 100);
   };
 
   const deleteService = (id: number) => {
-    if (window.confirm("Удалить услугу?")) setServices(services.filter(s => s.id !== id));
+    if (window.confirm("Удалить услугу?")) setServices(prev => prev.filter(s => s.id !== id));
   };
 
   const deleteMaster = (id: number) => {
-    if (window.confirm("Удалить мастера?")) setMasters(masters.filter(m => m.id !== id));
+    if (window.confirm("Удалить мастера?")) setMasters(prev => prev.filter(m => m.id !== id));
   };
 
   const deleteBooking = (id: number) => {
-    if (window.confirm("Удалить это бронирование?")) setBookings(bookings.filter(b => b.id !== id));
+    if (window.confirm("Удалить это бронирование?")) setBookings(prev => prev.filter(b => b.id !== id));
   };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,8 +152,10 @@ export default function Admin() {
     if (window.confirm("Удалить логотип?")) setLogo(null);
   };
 
+
+  const isModalReady = Boolean(currentItem && modalType);
+
   if (!isLoggedIn) {
-    // ... (логин остаётся без изменений)
     return (
       <div className="min-h-screen bg-beauty-gradient flex items-center justify-center p-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
@@ -186,8 +193,8 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-background flex">
+      {/* Sidebar и Main — без изменений */}
       <aside className="w-64 border-r border-muted hidden md:flex flex-col bg-white">
-        {/* Sidebar — без изменений */}
         <div className="p-8 border-b border-muted">
           <Link to="/" className="flex items-center gap-2">
             {logo ? <img src={logo} alt="logo" className="w-8 h-8 object-contain" /> : (
@@ -255,7 +262,7 @@ export default function Admin() {
 
           <Card className="rounded-[32px] border-muted shadow-sm overflow-hidden">
             <div className="p-8">
-              {/* Услуги */}
+       
               {activeTab === "services" && (
                 <div>
                   <h4 className="text-2xl font-bold mb-6">Услуги</h4>
@@ -281,7 +288,6 @@ export default function Admin() {
                 </div>
               )}
 
-              {/* Мастера */}
               {activeTab === "masters" && (
                 <div>
                   <h4 className="text-2xl font-bold mb-6">Мастера</h4>
@@ -307,7 +313,6 @@ export default function Admin() {
                 </div>
               )}
 
-              {/* Бронирования — ИЗМЕНЕНО */}
               {activeTab === "bookings" && (
                 <div>
                   <h4 className="text-2xl font-bold mb-6">Бронирования ({bookings.length})</h4>
@@ -342,7 +347,6 @@ export default function Admin() {
                 </div>
               )}
 
-              {/* Настройки */}
               {activeTab === "settings" && (
                 <div className="max-w-md space-y-8">
                   <h4 className="text-2xl font-bold">Настройки сайта</h4>
@@ -369,7 +373,7 @@ export default function Admin() {
         </div>
       </main>
 
-      {/* Модальное окно — РАСШИРЕНО */}
+
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-md rounded-3xl">
           <DialogHeader>
@@ -380,12 +384,10 @@ export default function Admin() {
             </DialogTitle>
           </DialogHeader>
 
-          {currentItem && (
+          {isModalReady && currentItem && (
             <div className="space-y-6 py-4">
-              {/* Услуга */}
               {modalType === "service" && (
                 <>
-                  {/* ... существующий код услуги без изменений ... */}
                   <div>
                     <Label>Фото услуги</Label>
                     {currentItem.image && <img src={currentItem.image} alt="" className="mt-3 w-32 h-32 object-cover rounded-xl" />}
@@ -411,10 +413,8 @@ export default function Admin() {
                 </>
               )}
 
-              {/* Мастер */}
               {modalType === "master" && (
                 <>
-                  {/* ... существующий код мастера без изменений ... */}
                   <div>
                     <Label>Фото мастера</Label>
                     {currentItem.photo && <img src={currentItem.photo} alt="" className="mt-3 w-32 h-32 object-cover rounded-full" />}
@@ -434,70 +434,38 @@ export default function Admin() {
                 </>
               )}
 
-              {/* Бронирование */}
               {modalType === "booking" && (
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label>Имя клиента</Label>
-                    <Input 
-                      value={currentItem.name} 
-                      onChange={(e) => setCurrentItem({...currentItem, name: e.target.value})} 
-                      placeholder="Иван Иванов" 
-                    />
+                    <Input value={currentItem.name} onChange={(e) => setCurrentItem({...currentItem, name: e.target.value})} placeholder="Иван Иванов" />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Телефон</Label>
-                      <Input 
-                        value={currentItem.phone} 
-                        onChange={(e) => setCurrentItem({...currentItem, phone: e.target.value})} 
-                        placeholder="+7 (___) ___-__-__" 
-                      />
+                      <Input value={currentItem.phone} onChange={(e) => setCurrentItem({...currentItem, phone: e.target.value})} placeholder="+7 (___) ___-__-__" />
                     </div>
                     <div className="space-y-2">
                       <Label>Email</Label>
-                      <Input 
-                        type="email"
-                        value={currentItem.email} 
-                        onChange={(e) => setCurrentItem({...currentItem, email: e.target.value})} 
-                      />
+                      <Input type="email" value={currentItem.email} onChange={(e) => setCurrentItem({...currentItem, email: e.target.value})} />
                     </div>
                   </div>
-
                   <div className="space-y-2">
                     <Label>Услуга</Label>
-                    <Input 
-                      value={currentItem.service} 
-                      onChange={(e) => setCurrentItem({...currentItem, service: e.target.value})} 
-                      placeholder="Стрижка + окрашивание" 
-                    />
+                    <Input value={currentItem.service} onChange={(e) => setCurrentItem({...currentItem, service: e.target.value})} placeholder="Стрижка + окрашивание" />
                   </div>
-
                   <div className="space-y-2">
                     <Label>Мастер</Label>
-                    <Input 
-                      value={currentItem.master} 
-                      onChange={(e) => setCurrentItem({...currentItem, master: e.target.value})} 
-                      placeholder="Анна Смирнова" 
-                    />
+                    <Input value={currentItem.master} onChange={(e) => setCurrentItem({...currentItem, master: e.target.value})} placeholder="Анна Смирнова" />
                   </div>
-
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Дата</Label>
-                      <Input 
-                        type="date" 
-                        value={currentItem.date} 
-                        onChange={(e) => setCurrentItem({...currentItem, date: e.target.value})} 
-                      />
+                      <Input type="date" value={currentItem.date} onChange={(e) => setCurrentItem({...currentItem, date: e.target.value})} />
                     </div>
                     <div className="space-y-2">
                       <Label>Время</Label>
-                      <Input 
-                        type="time" 
-                        value={currentItem.time} 
-                        onChange={(e) => setCurrentItem({...currentItem, time: e.target.value})} 
-                      />
+                      <Input type="time" value={currentItem.time} onChange={(e) => setCurrentItem({...currentItem, time: e.target.value})} />
                     </div>
                   </div>
                 </div>
@@ -506,8 +474,12 @@ export default function Admin() {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalOpen(false)}>Отмена</Button>
-            <Button onClick={saveItem}>{isEditMode ? "Сохранить изменения" : "Добавить"}</Button>
+            <Button variant="outline" onClick={() => { setIsModalOpen(false); setCurrentItem(null); }}>
+              Отмена
+            </Button>
+            <Button onClick={saveItem} disabled={!currentItem}>
+              {isEditMode ? "Сохранить изменения" : "Добавить"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

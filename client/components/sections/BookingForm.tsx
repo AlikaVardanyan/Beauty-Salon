@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,28 +36,15 @@ const bookingSchema = z.object({
   email: z.string().email("Некорректный email"),
 });
 
-const services = [
-  { id: "nails", name: "Маникюр и педикюр", price: "от 1 500 ₽", img: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&q=80&w=300" },
-  { id: "hair", name: "Парикмахерские услуги", price: "от 2 000 ₽", img: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=300" },
-  { id: "cosm", name: "Косметология", price: "от 3 500 ₽", img: "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&q=80&w=300" },
-  { id: "spa", name: "SPA и Массаж", price: "от 2 500 ₽", img: "https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&q=80&w=300" },
-];
-
-const masters = [
-  { name: "Анна Соколова", role: "Топ-стилист", img: "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?auto=format&fit=crop&q=80&w=200" },
-  { name: "Мария Иванова", role: "Мастер маникюра", img: "https://images.unsplash.com/photo-1594744803329-a584af1cae24?auto=format&fit=crop&q=80&w=200" },
-  { name: "Елена Петрова", role: "Косметолог", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200" },
-];
-
-const timeSlots = ["09:00", "10:30", "12:00", "13:30", "15:00", "16:30", "18:00", "19:30"];
-
 export default function BookingForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [step, setStep] = useState(1);
   
+  const [services, setServices] = useState<any[]>([]);
+  const [masters, setMasters] = useState<any[]>([]);
+
   const [bookedSlots, setBookedSlots] = useState([
     { master: "Анна Соколова", date: "2026-07-05", time: "10:30" },
-    { master: "Мария Иванова", date: "2026-07-06", time: "12:00" },
   ]);
 
   const form = useForm<z.infer<typeof bookingSchema>>({
@@ -78,6 +65,21 @@ export default function BookingForm() {
   const selectedMaster = watch("master");
   const selectedDate = watch("date");
   const selectedTime = watch("time");
+
+
+  useEffect(() => {
+    const loadedServices = JSON.parse(localStorage.getItem("services") || "[]");
+    const loadedMasters = JSON.parse(localStorage.getItem("masters") || "[]");
+
+    setServices(loadedServices.length > 0 ? loadedServices : [
+      // fallback если ничего нет в localStorage
+      { id: 1, name: "Маникюр и педикюр", price: "от 1 500 ₽", image: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&q=80&w=300" },
+    ]);
+
+    setMasters(loadedMasters.length > 0 ? loadedMasters : [
+      { id: 1, name: "Анна Соколова", specialty: "Топ-стилист", photo: "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?auto=format&fit=crop&q=80&w=200" },
+    ]);
+  }, []);
 
   const isSlotBooked = (master: string, date: Date | undefined, time: string) => {
     if (!date) return false;
@@ -110,11 +112,9 @@ export default function BookingForm() {
       email: values.email,
     };
 
-    // Сохраняем в localStorage для админки
     const existingBookings = JSON.parse(localStorage.getItem("bookings") || "[]");
     localStorage.setItem("bookings", JSON.stringify([newBooking, ...existingBookings]));
 
-    // Обновляем занятые слоты
     setBookedSlots(prev => [...prev, {
       master: values.master,
       date: newBooking.date,
@@ -134,6 +134,7 @@ export default function BookingForm() {
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           <div className="lg:col-span-4 space-y-10">
+      
             <div className="space-y-4">
               <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
                 <h2 className="text-5xl font-serif font-bold leading-tight">Бронирование</h2>
@@ -194,7 +195,7 @@ export default function BookingForm() {
                             <div className="space-y-4">
                               <h3 className="text-2xl font-serif font-bold">Выберите категорию</h3>
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {services.map((s) => (
+                                {services.map((s: any) => (
                                   <button 
                                     key={s.id} 
                                     type="button" 
@@ -203,10 +204,16 @@ export default function BookingForm() {
                                       selectedService === s.name ? "border-primary ring-4 ring-primary/10" : "border-transparent hover:border-primary/50"
                                     )}
                                   >
-                                    <img src={s.img} alt={s.name} className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-700" />
+                                    <img 
+                                      src={s.image || s.img} 
+                                      alt={s.name} 
+                                      className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-700" 
+                                    />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-5 text-left">
                                       <p className="text-white font-bold text-lg">{s.name}</p>
-                                      <p className="text-primary text-xs font-medium">{s.price}</p>
+                                      <p className="text-primary text-xs font-medium">
+                                        {s.price ? `${s.price} ₽` : "Цена по запросу"}
+                                      </p>
                                     </div>
                                     {selectedService === s.name && (
                                       <div className="absolute top-4 right-4 bg-primary text-white p-1 rounded-full">
@@ -221,9 +228,9 @@ export default function BookingForm() {
                             <div className="space-y-4">
                               <h3 className="text-2xl font-serif font-bold">Ваш специалист</h3>
                               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                {masters.map((m) => (
+                                {masters.map((m: any) => (
                                   <button 
-                                    key={m.name} 
+                                    key={m.id || m.name} 
                                     type="button" 
                                     onClick={() => setValue("master", m.name, { shouldValidate: true })}
                                     className={cn("flex flex-col items-center p-6 rounded-3xl border-2 transition-all gap-4", 
@@ -231,11 +238,17 @@ export default function BookingForm() {
                                     )}
                                   >
                                     <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-xl">
-                                      <img src={m.img} alt={m.name} className="w-full h-full object-cover" />
+                                      <img 
+                                        src={m.photo || m.img} 
+                                        alt={m.name} 
+                                        className="w-full h-full object-cover" 
+                                      />
                                     </div>
                                     <div className="text-center">
                                       <p className="font-bold text-base">{m.name}</p>
-                                      <p className="text-xs text-muted-foreground font-medium">{m.role}</p>
+                                      <p className="text-xs text-muted-foreground font-medium">
+                                        {m.specialty || m.role}
+                                      </p>
                                     </div>
                                   </button>
                                 ))}
@@ -244,6 +257,7 @@ export default function BookingForm() {
                           </div>
                         )}
 
+                       
                         {step === 2 && (
                           <div className="space-y-12">
                             <div className="flex flex-col lg:flex-row gap-12">
@@ -277,7 +291,7 @@ export default function BookingForm() {
                               <div className="lg:w-80 space-y-6">
                                 <h3 className="text-2xl font-serif font-bold">Свободное время</h3>
                                 <div className="grid grid-cols-2 gap-3">
-                                  {timeSlots.map((slot) => {
+                                  {["09:00", "10:30", "12:00", "13:30", "15:00", "16:30", "18:00", "19:30"].map((slot) => {
                                     const isBooked = isSlotBooked(selectedMaster, selectedDate, slot);
                                     return (
                                       <button
