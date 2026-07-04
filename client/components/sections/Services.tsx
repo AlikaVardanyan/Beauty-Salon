@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Scissors, Sparkles, Heart, Wand2 } from "lucide-react";
+import { Scissors } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function Services() {
@@ -16,9 +16,8 @@ export default function Services() {
 
     loadServices();
 
-    // Обновление при изменениях из админки
     window.addEventListener("storage", loadServices);
-    const interval = setInterval(loadServices, 1500); // на всякий случай
+    const interval = setInterval(loadServices, 1000);
 
     return () => {
       window.removeEventListener("storage", loadServices);
@@ -26,7 +25,6 @@ export default function Services() {
     };
   }, []);
 
-  // Если услуг нет — показываем заглушку
   if (services.length === 0) {
     return (
       <section id="services" className="py-24 px-6 bg-white text-center">
@@ -74,8 +72,7 @@ export default function Services() {
             viewport={{ once: true }}
             className="text-muted-foreground max-w-2xl mx-auto"
           >
-            Мы объединили лучшие технологии и мастерство экспертов, чтобы вы получили
-            безупречный результат.
+            Мы объединили лучшие технологии и мастерство экспертов, чтобы вы получили безупречный результат.
           </motion.p>
         </div>
 
@@ -96,26 +93,26 @@ export default function Services() {
               <div className="aspect-[4/3] overflow-hidden">
                 <img 
                   src={service.image || "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&q=80&w=800"} 
-                  alt={service.name || service.title} 
+                  alt={service.name} 
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
               </div>
               <div className="p-8">
                 <div className="w-12 h-12 bg-accent rounded-2xl flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
-                  {service.icon || <Scissors className="w-6 h-6" />}
+                  <Scissors className="w-6 h-6" />
                 </div>
                 <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">
-                  {service.name || service.title}
+                  {service.name}
                 </h3>
                 <p className="text-muted-foreground text-sm mb-6 line-clamp-2">
-                  {service.description}
+                  {service.description || "Профессиональная услуга высшего уровня"}
                 </p>
                 <div className="flex items-center justify-between pt-4 border-t border-muted">
                   <div className="text-xs text-muted-foreground font-medium">
                     <p className="text-foreground font-bold text-base">
                       {service.price ? `${service.price} ₽` : "от 2 000 ₽"}
                     </p>
-                    <p>{service.duration || "60 мин"}</p>
+                    <p>{service.duration ? `${service.duration} мин` : "60 мин"}</p>
                   </div>
                   <Button variant="ghost" size="sm" className="rounded-full hover:bg-primary hover:text-white" asChild>
                     <a href="#booking">Выбрать</a>
